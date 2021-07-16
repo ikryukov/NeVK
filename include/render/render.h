@@ -13,9 +13,11 @@
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
+#include "gbuffer.h"
 #include "computepass.h"
 #include "depthpass.h"
 #include "renderpass.h"
+#include "gbufferpass.h"
 
 #include <modelloader/modelloader.h>
 #include <resourcemanager/resourcemanager.h>
@@ -117,8 +119,8 @@ private:
     nevk::Image* depthImage;
     VkImageView depthImageView;
 
-    // nevk::Image* textureCompImage;
-    // VkImageView textureCompImageView;
+    nevk::Image* textureCompImage;
+    VkImageView textureCompImageView;
 
     nevk::Image* shadowImage;
     VkImageView shadowImageView;
@@ -126,8 +128,9 @@ private:
     nevk::ResourceManager* mResManager = nullptr;
     nevk::TextureManager* mTexManager = nullptr;
 
-    nevk::RenderPass mPass;
-    nevk::RenderPass mPbrPass;
+    GBuffer mGbuffer;
+    nevk::GbufferPass mGbufferPass;
+
     nevk::ModelLoader* modelLoader = nullptr;
     nevk::ComputePass mComputePass;
     nevk::DepthPass mDepthPass;
@@ -244,6 +247,9 @@ private:
 
     void createImageViews();
 
+    GBuffer createGbuffer(uint32_t width, uint32_t height);
+    void createGbufferPass();
+
     void createCommandPool();
 
     void createDepthResources();
@@ -264,6 +270,9 @@ private:
     void createDescriptorPool();
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    void recordBarrier(VkCommandBuffer& cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, 
+        VkAccessFlags srcAccess, VkAccessFlags dstAccess, VkPipelineStageFlags sourceStage, VkPipelineStageFlags destinationStage, VkImageAspectFlags aspectMask = VK_IMAGE_ASPECT_COLOR_BIT);
 
     void recordCommandBuffer(VkCommandBuffer& cmd, uint32_t imageIndex);
 
